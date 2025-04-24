@@ -32,21 +32,21 @@ def segment_with_histogram(img_path: str, histogram: np.array, threshold: float 
     img_in = Image.open(img_path).convert('HSV')
     im_array = np.asarray(img_in)
     x, y, c = im_array.shape
-    segmented_im = np.zeros((x,y))
+    segmented_im = np.zeros((x,y,c))
     # loop over every pixel
     for i in range(x):  
         for j in range(y):
             # fetch pixel information
-            pixel_hue, pixel_saturation, _ = im_array[i][j]
+            pixel_hue, pixel_saturation, pixel_color = im_array[i][j]
             # get probability from histogram that this pixel is a skin tone
             prob = histogram[pixel_hue][pixel_saturation]
             # if this probability is above given threshold, then it is a pixel of skin color
             if prob > threshold:
-                segmented_im[i][j] = 255
+                segmented_im[i][j] = im_array[i][j]
     
     # create image and save to disk 
     output_img_path = 'segmented' + img_path[:-3] + 'png'
-    return_im = Image.fromarray(segmented_im.astype(np.uint8))
+    return_im = Image.fromarray(segmented_im.astype(np.uint8), 'HSV').convert('RGB')
     return_im.save(output_img_path)
     print(f'Image saved at: {output_img_path}')
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     ]
     # for all files provided, create segmented image
     for file_name in file_names:
-        segmented_im = segment_with_histogram(img_path=file_name, histogram=histogram, threshold=0.75)
+        segmented_im = segment_with_histogram(img_path=file_name, histogram=histogram, threshold=0.85)
         # convert bmp images for report
         img = Image.open(file_name)
         img.save(file_name[:-3]+'png')
